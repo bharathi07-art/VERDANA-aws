@@ -45,7 +45,7 @@ import VerifiedIcon from "@mui/icons-material/Verified";
 import QuickViewModal from "../components/QuickViewModal";
 import Footer from "../components/Footer";
 
-import {fetchProducts} from "../api/productApi.js";
+import {fetchProducts,getProductById} from "../api/productApi.js";
 
 export default function Home() {
   // Hero Carousel State
@@ -762,6 +762,7 @@ export default function Home() {
                             <CardActionArea
                               component={Link}
                               to={`/product/${item.id}`}
+                              onClick={getProductById(`${item.id}`)}
                             >
                               <CardMedia
                                 component="img"

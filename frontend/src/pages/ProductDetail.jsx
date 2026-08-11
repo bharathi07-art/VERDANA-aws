@@ -20,9 +20,9 @@ import {
   Card,
   CardContent,
   IconButton,
-  Alert
+  Alert,
+  CircularProgress,
 } from "@mui/material";
-import StarRateIcon from "@mui/icons-material/StarRate";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -32,29 +32,71 @@ import BookmarkIcon from "@mui/icons-material/Bookmark";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import Footer from "../components/Footer";
-import { getProductById, addReviewToProduct, toggleBookmark, getBookmarks, getStoredProducts } from "../data/productStore";
+import { getProductById, fetchProducts } from "../api/productApi.js";
 
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [activeImage, setActiveImage] = useState("");
-  const [bookmarks, setBookmarks] = useState(getBookmarks());
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
+  const [bookmarks, setBookmarks] = useState(() => {
+    const saved = localStorage.getItem("verdana_bookmarks");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reviewForm, setReviewForm] = useState({ author: "", title: "", rating: 5, comment: "" });
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
+  // Fetch the product itself
   useEffect(() => {
-    const found = getProductById(id);
-    if (found) {
-      setItem(found);
-      setActiveImage(found.image);
-    } else {
-      setItem(null);
-    }
+    setLoading(true);
+    setNotFound(false);
+
+    (async () => {
+      try {
+        const found = await getProductById(id); // fixed: was missing `id`
+        setItem(found);
+        setActiveImage(found.image);
+      } catch (err) {
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id]);
 
-  if (!item) {
+  // Fetch related products once we know the current product's category
+  useEffect(() => {
+    if (!item) return;
+
+    (async () => {
+      try {
+        const all = await fetchProducts();
+        const related = all
+          .filter((p) => p.category === item.category && p.id !== item.id)
+          .slice(0, 3);
+        setRelatedProducts(related);
+      } catch (err) {
+        console.error("Failed to load related products:", err.message);
+      }
+    })();
+  }, [item]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
+        <CircularProgress color="secondary" />
+      </Box>
+    );
+  }
+
+  if (notFound || !item) {
     return (
       <Box sx={{ p: 8, textAlign: "center", minHeight: "60vh", bgcolor: "#FAF8F5" }}>
         <Typography variant="h4" fontWeight={700} color="primary" mb={2}>
@@ -73,44 +115,64 @@ export default function ProductDetails() {
   const isBookmarked = bookmarks.includes(item.id);
 
   const handleBookmarkToggle = () => {
-    const updated = toggleBookmark(item.id);
-    setBookmarks(updated);
+    setBookmarks((prev) => {
+      const updated = prev.includes(item.id)
+        ? prev.filter((bId) => bId !== item.id)
+        : [...prev, item.id];
+      localStorage.setItem("verdana_bookmarks", JSON.stringify(updated));
+      return updated;
+    });
   };
 
+  // NOTE: local-only for now - no backend endpoint exists yet to persist reviews.
+  // This updates the page's in-memory state so the UI works, but a refresh will
+  // lose it. Flag if you want the real POST /api/products/:id/reviews endpoint built.
   const handleAddReviewSubmit = (e) => {
     e.preventDefault();
     if (!reviewForm.comment.trim()) return;
-    const updatedProduct = addReviewToProduct(item.id, reviewForm);
-    if (updatedProduct) {
-      setItem(updatedProduct);
-      setSubmittedSuccess(true);
-      setTimeout(() => {
-        setSubmittedSuccess(false);
-        setReviewDialogOpen(false);
-        setReviewForm({ author: "", title: "", rating: 5, comment: "" });
-      }, 1500);
-    }
+
+    const newReview = {
+      id: Date.now(),
+      author: reviewForm.author,
+      title: reviewForm.title,
+      rating: reviewForm.rating,
+      comment: reviewForm.comment,
+      date: new Date().toLocaleDateString(),
+      verified: false,
+    };
+
+    setItem((prev) => ({
+      ...prev,
+      userReviews: [...(prev.userReviews || []), newReview],
+    }));
+
+    setSubmittedSuccess(true);
+    setTimeout(() => {
+      setSubmittedSuccess(false);
+      setReviewDialogOpen(false);
+      setReviewForm({ author: "", title: "", rating: 5, comment: "" });
+    }, 1500);
   };
 
-  // Related items
-  const allProducts = getStoredProducts();
-  const relatedProducts = allProducts.filter((p) => p.category === item.category && p.id !== item.id).slice(0, 3);
-
-  // Rating percentage calculation
-  const totalRevCount = item.reviewCount || 1;
+  const totalRevCount = item.reviewCount || item.userReviews?.length || 1;
   const breakdown = item.ratingsBreakdown || { 5: 80, 4: 15, 3: 3, 2: 1, 1: 1 };
   const sumVal = Object.values(breakdown).reduce((a, b) => a + b, 0) || 100;
 
   const ratingBars = [5, 4, 3, 2, 1].map((star) => ({
     star,
-    percent: Math.round(((breakdown[star] || 0) / sumVal) * 100)
+    percent: Math.round(((breakdown[star] || 0) / sumVal) * 100),
   }));
 
   return (
     <Box sx={{ bgcolor: "#FAF8F5", minHeight: "100vh", pt: 4 }}>
       <Box sx={{ maxWidth: 1300, mx: "auto", px: { xs: 2, md: 6 } }}>
         {/* Breadcrumbs Navigation */}
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3 }sx={{ display:"flex",justifyContent:"space-between", alignItems:"center",mb:3}}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={3}
+        >
           <Breadcrumbs separator="›" aria-label="breadcrumb">
             <Typography component={Link} to="/" sx={{ textDecoration: "none", color: "text.secondary", "&:hover": { color: "primary.main" } }}>
               Home
@@ -136,7 +198,7 @@ export default function ProductDetails() {
         <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, bgcolor: "white", borderRadius: 4, border: "1px solid #E5E7EB", mb: 6 }}>
           <Grid container spacing={5}>
             {/* Gallery Images Column */}
-            <Grid item xs={12} md={5} sx={{display:"flex", gap:5,flexDirection:"column"}}>
+            <Grid size={{ xs: 12, md: 5 }} sx={{ display: "flex", gap: 5, flexDirection: "column" }}>
               <Box sx={{ position: "relative" }}>
                 <Box
                   component="img"
@@ -147,7 +209,7 @@ export default function ProductDetails() {
                     height: 420,
                     objectFit: "cover",
                     borderRadius: 3,
-                    border: "1px solid #E5E7EB"
+                    border: "1px solid #E5E7EB",
                   }}
                 />
                 <IconButton
@@ -158,14 +220,13 @@ export default function ProductDetails() {
                     right: 12,
                     bgcolor: "rgba(255,255,255,0.9)",
                     color: isBookmarked ? "secondary.main" : "text.secondary",
-                    "&:hover": { bgcolor: "white" }
+                    "&:hover": { bgcolor: "white" },
                   }}
                 >
                   {isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
                 </IconButton>
               </Box>
 
-              {/* Thumbnails */}
               {item.gallery && item.gallery.length > 1 && (
                 <Stack direction="row" spacing={1.5} mt={2} justifyContent="center">
                   {item.gallery.map((imgUrl, idx) => (
@@ -183,7 +244,7 @@ export default function ProductDetails() {
                         cursor: "pointer",
                         border: activeImage === imgUrl ? "2px solid #798262" : "1px solid #E5E7EB",
                         opacity: activeImage === imgUrl ? 1 : 0.7,
-                        transition: "all 0.2s"
+                        transition: "all 0.2s",
                       }}
                     />
                   ))}
@@ -192,7 +253,7 @@ export default function ProductDetails() {
             </Grid>
 
             {/* Product Meta & Verdict Summary */}
-            <Grid item xs={12} md={7} sx={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <Grid size={{ xs: 12, md: 7 }} sx={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <Box>
                 <Stack direction="row" spacing={1} alignItems="center" mb={1}>
                   <Chip label={item.category} color="secondary" size="small" sx={{ fontWeight: 700 }} />
@@ -213,11 +274,10 @@ export default function ProductDetails() {
                   BY {item.brand ? item.brand.toUpperCase() : "VERDANA INDEPENDENT REVIEW"}
                 </Typography>
 
-                {/* Rating Score */}
                 <Stack direction="row" spacing={2} alignItems="center" mb={3}>
-                  <Rating value={item.Ratings} precision={0.1} readOnly size="large" />
+                  <Rating value={item.rating} precision={0.1} readOnly size="large" />
                   <Box sx={{ bgcolor: "#798262", color: "white", px: 1.5, py: 0.5, borderRadius: 1.5, fontWeight: 800 }}>
-                    {item.Ratings} / 5.0
+                    {item.rating} / 5.0
                   </Box>
                   <Typography variant="body2" color="text.secondary">
                     Based on {totalRevCount} verified evaluations
@@ -228,7 +288,6 @@ export default function ProductDetails() {
                   {item.discription}
                 </Typography>
 
-                {/* Best For Tags */}
                 {item.bestFor && item.bestFor.length > 0 && (
                   <Box mb={3}>
                     <Typography variant="caption" fontWeight={700} color="text.secondary" display="block" mb={1}>
@@ -242,17 +301,16 @@ export default function ProductDetails() {
                   </Box>
                 )}
 
-                {/* Price Display */}
-                {item.price && (
-                  <Typography variant="h4" fontWeight={900} color="primary.main" mb={3}>
-                    ${item.price.toFixed(2)}
-                  </Typography>
-                )}
+                {/* Price intentionally NOT rendered here - internal reference only,
+                    per Amazon Associates compliance rules set at project start */}
               </Box>
 
               {/* Affiliate CTA Box */}
               <Paper elevation={0} sx={{ p: 2.5, bgcolor: "#FAF8F5", border: "1px solid #E5E7EB", borderRadius: 3 }}>
-                <Stack direction={{ xs: "column", sm: "row" }} sx={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:5 }} >
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 3 }}
+                >
                   <Box>
                     <Typography variant="subtitle2" fontWeight={700}>
                       Ready to order?
@@ -281,18 +339,20 @@ export default function ProductDetails() {
         </Paper>
 
         {/* Detailed Pros & Cons Section */}
-        <Grid container spacing={4} mb={6} sx={{mb:6}}>
-          {/* Pros Card */}
-          <Grid item xs={12} md={6}>
+        <Grid container spacing={4} mb={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper elevation={0} sx={{ p: 4, bgcolor: "#F4F7F2", border: "1px solid #D2DEC9", borderRadius: 3, height: "100%" }}>
-              <Stack direction="row" spacing={1.5} alignItems="center" mb={3} sx={{mb:3}}>
+              <Stack direction="row" spacing={1.5} alignItems="center" mb={3}>
                 <CheckCircleIcon sx={{ color: "#4A6B3A", fontSize: 28 }} />
                 <Typography variant="h5" fontWeight={800} color="#2D4521">
                   The Pros (What We Loved)
                 </Typography>
               </Stack>
               <Stack spacing={2}>
-                {(item.pros && item.pros.length > 0 ? item.pros : ["Formulated with pure botanical ingredients", "Dermatologically tested", "Noticeable results within 14 days"]).map((pro, idx) => (
+                {(item.pros && item.pros.length > 0
+                  ? item.pros
+                  : ["Formulated with pure botanical ingredients", "Dermatologically tested", "Noticeable results within 14 days"]
+                ).map((pro, idx) => (
                   <Stack key={idx} direction="row" spacing={1.5} alignItems="flex-start">
                     <CheckCircleIcon sx={{ color: "#4A6B3A", fontSize: 18, mt: 0.3 }} />
                     <Typography variant="body1" color="text.primary" sx={{ lineHeight: 1.5 }}>
@@ -304,17 +364,19 @@ export default function ProductDetails() {
             </Paper>
           </Grid>
 
-          {/* Cons Card */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper elevation={0} sx={{ p: 4, bgcolor: "#FDF4F4", border: "1px solid #F3C6C6", borderRadius: 3, height: "100%" }}>
-              <Stack direction="row" spacing={1.5} alignItems="center" mb={3} sx={{mb:3}}>
+              <Stack direction="row" spacing={1.5} alignItems="center" mb={3}>
                 <CancelIcon sx={{ color: "#9B3838", fontSize: 28 }} />
                 <Typography variant="h5" fontWeight={800} color="#5C1C1C">
                   The Cons (Things to Consider)
                 </Typography>
               </Stack>
               <Stack spacing={2}>
-                {(item.cons && item.cons.length > 0 ? item.cons : ["Requires consistent daily application", "Slightly higher premium price tag"]).map((con, idx) => (
+                {(item.cons && item.cons.length > 0
+                  ? item.cons
+                  : ["Requires consistent daily application", "Slightly higher premium price tag"]
+                ).map((con, idx) => (
                   <Stack key={idx} direction="row" spacing={1.5} alignItems="flex-start">
                     <CancelIcon sx={{ color: "#9B3838", fontSize: 18, mt: 0.3 }} />
                     <Typography variant="body1" color="text.primary" sx={{ lineHeight: 1.5 }}>
@@ -341,7 +403,13 @@ export default function ProductDetails() {
 
         {/* Ratings Breakdown & User Reviews */}
         <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, bgcolor: "white", borderRadius: 4, border: "1px solid #E5E7EB", mb: 6 }}>
-          <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} mb={4} gap={2} sx={{display:"flex",justifyContent:"space-between",mb:4 }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            justifyContent="space-between"
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            mb={4}
+            gap={2}
+          >
             <Box>
               <Typography variant="h4" fontWeight={900} fontFamily="Libertinus, serif" color="primary">
                 Product Ratings & Reviews
@@ -351,32 +419,25 @@ export default function ProductDetails() {
               </Typography>
             </Box>
 
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<RateReviewIcon />}
-              onClick={() => setReviewDialogOpen(true)}
-            >
+            <Button variant="contained" color="primary" startIcon={<RateReviewIcon />} onClick={() => setReviewDialogOpen(true)}>
               Write a Review
             </Button>
           </Stack>
 
           <Grid container spacing={4} alignItems="center" mb={4}>
-            {/* Average Big Score */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Paper elevation={0} sx={{ p: 4, textAlign: "center", bgcolor: "#FAF8F5", border: "1px solid #E5E7EB", borderRadius: 3 }}>
                 <Typography variant="h2" fontWeight={900} fontFamily="Libertinus, serif" color="secondary.main">
-                  {item.Ratings}
+                  {item.rating}
                 </Typography>
-                <Rating value={item.Ratings} precision={0.1} readOnly size="large" sx={{ my: 1 }} />
+                <Rating value={item.rating} precision={0.1} readOnly size="large" sx={{ my: 1 }} />
                 <Typography variant="body2" color="text.secondary" fontWeight={600}>
                   {totalRevCount} Reader Reviews
                 </Typography>
               </Paper>
             </Grid>
 
-            {/* Distribution Bars */}
-            <Grid item xs={12} md={8}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Stack spacing={1.5}>
                 {ratingBars.map((bar) => (
                   <Stack key={bar.star} direction="row" spacing={2} alignItems="center">
@@ -391,7 +452,7 @@ export default function ProductDetails() {
                           height: 10,
                           borderRadius: 5,
                           bgcolor: "#E5E7EB",
-                          "& .MuiLinearProgress-bar": { bgcolor: "#798262", borderRadius: 5 }
+                          "& .MuiLinearProgress-bar": { bgcolor: "#798262", borderRadius: 5 },
                         }}
                       />
                     </Box>
@@ -406,7 +467,6 @@ export default function ProductDetails() {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* User Reviews List */}
           <Typography variant="h6" fontWeight={800} mb={3}>
             Reader Reviews ({item.userReviews?.length || 0})
           </Typography>
@@ -455,7 +515,7 @@ export default function ProductDetails() {
             </Typography>
             <Grid container spacing={3}>
               {relatedProducts.map((rel) => (
-                <Grid item key={rel.id} xs={12} sm={4}>
+                <Grid key={rel.id} size={{ xs: 12, sm: 4 }}>
                   <Card elevation={0} sx={{ border: "1px solid #E5E7EB", borderRadius: 3, bgcolor: "white" }}>
                     <Box
                       component="img"
@@ -464,10 +524,17 @@ export default function ProductDetails() {
                       sx={{ width: "100%", height: 180, objectFit: "cover" }}
                     />
                     <CardContent sx={{ p: 2 }}>
-                      <Typography variant="subtitle1" fontWeight={700} noWrap component={Link} to={`/product/${rel.id}`} sx={{ textDecoration: "none", color: "text.primary" }}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        noWrap
+                        component={Link}
+                        to={`/product/${rel.id}`}
+                        sx={{ textDecoration: "none", color: "text.primary" }}
+                      >
                         {rel.name}
                       </Typography>
-                      <Rating value={rel.Ratings} readOnly size="small" sx={{ my: 0.5 }} />
+                      <Rating value={rel.rating} readOnly size="small" sx={{ my: 0.5 }} />
                       <Button
                         component={Link}
                         to={`/product/${rel.id}`}
@@ -497,7 +564,7 @@ export default function ProductDetails() {
           <DialogContent sx={{ pt: 1 }}>
             {submittedSuccess ? (
               <Alert severity="success" sx={{ mb: 2 }}>
-                Thank you! Your review has been published successfully.
+                Thank you! Your review has been added to this page.
               </Alert>
             ) : (
               <Stack spacing={2.5}>
@@ -555,7 +622,6 @@ export default function ProductDetails() {
         </Box>
       </Dialog>
 
-      {/* Footer */}
       <Footer />
     </Box>
   );

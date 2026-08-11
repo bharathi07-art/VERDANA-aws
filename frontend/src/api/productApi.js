@@ -35,7 +35,7 @@ export  async function getProductById(id) {
 
   if (!res.ok) {
     const errData = await res.json().catch(() => ({}));
-    throw new Error(errData.error || "Failed to load product");
+    throw new Error(errData.error || "Product not found");
   }
 
   return res.json();
