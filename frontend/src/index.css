@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Libertinus+Serif:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Saira+Stencil:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+
+:root {
+    --primary: #4c2b12;
+    --secoundary:#7f5235;
+    --bgColor:#d2c998;
+    --nav: #dfe0ac;
+    --text:#33352c;
+    --font-libertinus: "Libertinus Serif", serif;
+}
+#root{
+    width:99%
+
+}
+@theme {
+  --font-libertinus: "Libertinus Serif", serif;
+}
