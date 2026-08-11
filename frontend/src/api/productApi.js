@@ -59,3 +59,16 @@ export  async function updateProduct(id, product) {
 
   return res.json();
 }
+
+export async function deleteProduct(id){
+   const token = localStorage.getItem("verdana_admin_token");
+  const res = await fetch(`${PRODUCT_BASE}/delete/${id}`,{
+    method:"DELETE",
+    headers:{
+      "Content-type":"application/json",
+      Authorization:`Bearer ${token}`
+    },
+    body:JSON.stringify(id)
+  });
+  return res.json();
+}

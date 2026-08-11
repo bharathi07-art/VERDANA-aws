@@ -7,11 +7,23 @@ import CategoryIcon from "@mui/icons-material/Category";
 import AddIcon from "@mui/icons-material/Add";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Link } from "react-router-dom";
+import {fetchProducts} from "../../api/productApi.js"
 
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true)
 
+  useEffect(()=>{
+    (async ()=>{
+      try{
+        const data = await fetchProducts();
+        setProducts(data);
+      }finally{
+        setLoading(false)
+      }
+    })();
+  },[]);
   
 
   const totalProducts = products.length;
@@ -109,7 +121,7 @@ export default function AdminDashboard() {
                     <Typography variant="body2" fontWeight={700}>{p.Ratings} ★</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" fontWeight={700}>${p.price?.toFixed(2)}</Typography>
+                    <Typography variant="body2" fontWeight={700}>${p.price? Number(p.price).toFixed(2):"-"}</Typography>
                   </TableCell>
                   <TableCell>
                     {p.amazonAffiliateUrl ? (

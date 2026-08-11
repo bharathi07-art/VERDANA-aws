@@ -103,7 +103,7 @@ export default function AdminProductForm() {
   return (
     <Box maxWidth={1000} mx="auto">
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} sx={{display:"flex",flexDirection:"column" ,justifyContent:"center", mb:3}}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/admin/products")} color="inherit">
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/admin/productList")} color="inherit">
           Back to Products List 
         </Button>
         <Typography variant="h4" fontWeight={900} fontFamily="Libertinus, serif" color="primary">

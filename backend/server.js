@@ -19,6 +19,7 @@ const port = process.env.PORT;
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.use("/api/auth", authRoute);
 app.use("/api/product",productRoute);
+app.use("/api/auth/product/",productRoute);
 
 connectPostgres().then(async () => {
   await sequelize.sync(); //create table if they don't exist

@@ -27,7 +27,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Link, useNavigate } from "react-router-dom";
-import { getStoredProducts, deleteProduct } from "../../data/productStore";
+import {deleteProduct} from "../../api/productApi.js";
 
 export default function AdminProductList() {
   const [products, setProducts] = useState([]);
@@ -36,16 +36,14 @@ export default function AdminProductList() {
   const [error, setError]=useState("")
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setProducts(getStoredProducts());
-  }, []);
+
 
   
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteTarget) {
-      addProduct(deleteTarget);
-      navigate("/admin/Dashboard")
+      await deleteProduct(deleteTarget);
+      navigate("/admin/Dashboard");
     }
   };
 
@@ -149,7 +147,7 @@ export default function AdminProductList() {
                       <IconButton component={Link} to={`/admin/products/edit/${item.id}`} size="small" color="primary">
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      <IconButton onClick={() => setDeleteTarget(item)} size="small" color="error">
+                      <IconButton onClick={() => setDeleteTarget(item.id)} size="small" color="error">
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Stack>
