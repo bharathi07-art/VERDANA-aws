@@ -9,7 +9,7 @@ const Product = sequelize.define("product",{
     price:{type:DataTypes.DECIMAL(10,2)},    
     Ratings:{type:DataTypes.DECIMAL(2,1)},
     image:{type:DataTypes.STRING,},
-    //image pending
+
     discription:{type:DataTypes.TEXT},
     amazonAffiliateUrl:{type:DataTypes.STRING},
     prosText:{type:DataTypes.JSONB,defaultValue:[]},
