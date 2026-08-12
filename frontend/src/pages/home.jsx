@@ -28,6 +28,8 @@ import {
   MenuItem,
   InputLabel,
   Tooltip,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import SearchIcon from "@mui/icons-material/Search";
@@ -695,7 +697,17 @@ export default function Home() {
 
             {/* Products Grid */}
             <Grid size={{ xs: 12, md: 9 }}>
-              {filteredProducts.length === 0 ?
+              {error && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {error}
+                </Alert>
+              )}
+
+              {loading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
+                  <CircularProgress color="secondary" />
+                </Box>
+              ) : filteredProducts.length === 0 ? (
                 <Paper
                   elevation={0}
                   sx={{
@@ -733,7 +745,8 @@ export default function Home() {
                     </Button>
                   </Box>
                 </Paper>
-              : <Grid container spacing={3}>
+              ) : (
+                <Grid container spacing={3}>
                   {filteredProducts.map((item) => {
                     const isBookmarked = bookmarks.includes(item.id);
                     return (
@@ -926,7 +939,7 @@ export default function Home() {
                     );
                   })}
                 </Grid>
-              }
+              )}
             </Grid>
           </Grid>
         </Box>
