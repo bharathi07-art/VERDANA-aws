@@ -61,14 +61,13 @@ export  async function updateProduct(id, product) {
 }
 
 export async function deleteProduct(id){
-   const token = localStorage.getItem("verdana_admin_token");
-  const res = await fetch(`${PRODUCT_BASE}/delete/${id}`,{
+   
+  const res = await fetch(`/api/product/delete/${id}`,{
     method:"DELETE",
-    headers:{
-      "Content-type":"application/json",
-      Authorization:`Bearer ${token}`
-    },
-    body:JSON.stringify(id)
   });
+  if(!res.ok){
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || "Product not found");
+  }
   return res.json();
 }

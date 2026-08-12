@@ -89,6 +89,7 @@ export default function AdminProductList() {
           />
         </Box>
 
+<<<<<<< Updated upstream
         <TableContainer>
           <Table>
             <TableHead sx={{ bgcolor: "#FAF8F5" }}>
@@ -146,6 +147,64 @@ export default function AdminProductList() {
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
                       <IconButton component={Link} to={`/admin/products/edit/${item.id}`} size="small" color="primary">
                         <EditIcon fontSize="small" />
+=======
+        {pageLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <CircularProgress color="primary" />
+          </Box>
+        ) : (
+          <TableContainer>
+            <Table>
+              <TableHead sx={{ bgcolor: "#FAF8F5" }}>
+                <TableRow>
+                  <TableCell fontWeight={700}>Thumbnail</TableCell>
+                  <TableCell fontWeight={700}>Name</TableCell>
+                  <TableCell fontWeight={700}>Category</TableCell>
+                  <TableCell fontWeight={700}>Price</TableCell>
+                  <TableCell fontWeight={700}>Rating</TableCell>
+                  <TableCell fontWeight={700}>Amazon Link</TableCell>
+                  <TableCell fontWeight={700} align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filtered.map((item) => (
+                  <TableRow key={item.id} hover>
+                    <TableCell>
+                      <Box component="img" src={item.image} alt={item.name} sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: "cover" }} />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        {item.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        ID: {item.id}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={item.category} size="small" variant="outlined" />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={700}>
+                        ${Number(item.price || 0).toFixed(2)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={700}>
+                        {item.Ratings} ★
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <IconButton
+                        component="a"
+                        href={item.amazonAffiliateUrl || "#"}
+                        target="_blank"
+                        rel="nofollow sponsored noopener"
+                        size="small"
+                        color="secondary"
+                        disabled={!item.amazonAffiliateUrl}
+                      >
+                        <OpenInNewIcon fontSize="small" />
+>>>>>>> Stashed changes
                       </IconButton>
                       <IconButton onClick={() => setDeleteTarget(item.id)} size="small" color="error">
                         <DeleteIcon fontSize="small" />
