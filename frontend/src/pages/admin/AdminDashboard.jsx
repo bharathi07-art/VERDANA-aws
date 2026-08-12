@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, Grid, Paper, Stack, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from "@mui/material";
+import { Box, Typography, Grid, Paper, Stack, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, CircularProgress, Alert } from "@mui/material";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import StarIcon from "@mui/icons-material/Star";
@@ -12,18 +12,23 @@ import {fetchProducts} from "../../api/productApi.js"
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(()=>{
-    (async ()=>{
-      try{
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      setError("");
+      try {
         const data = await fetchProducts();
-        setProducts(data);
-      }finally{
-        setLoading(false)
+        setProducts(data || []);
+      } catch (err) {
+        setError(err.message || "Failed to load dashboard analytics");
+      } finally {
+        setLoading(false);
       }
     })();
-  },[]);
+  }, []);
   
 
   const totalProducts = products.length;
@@ -63,84 +68,99 @@ export default function AdminDashboard() {
         </Stack>
       </Stack>
 
-      {/* Metrics Cards */}
-      <Grid container spacing={3} mb={4}>
-        {stats.map((st, idx) => (
-          <Grid item key={idx} xs={12} sm={6} md={3} sx={{mb:3}}>
-            <Paper elevation={0} sx={{ p: 3, bgcolor: st.bg, borderRadius: 3, border: "1px solid #E5E7EB" }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" mb={0.5}>
-                    {st.title.toUpperCase()}
-                  </Typography>
-                  <Typography variant="h4" fontWeight={900} color="primary">
-                    {st.value}
-                  </Typography>
-                </Box>
-                {st.icon}
-              </Stack>
-            </Paper>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
+          <CircularProgress color="primary" />
+        </Box>
+      ) : (
+        <>
+          {/* Metrics Cards */}
+          <Grid container spacing={3} mb={4}>
+            {stats.map((st, idx) => (
+              <Grid item key={idx} xs={12} sm={6} md={3} sx={{mb:3}}>
+                <Paper elevation={0} sx={{ p: 3, bgcolor: st.bg, borderRadius: 3, border: "1px solid #E5E7EB" }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" mb={0.5}>
+                        {st.title.toUpperCase()}
+                      </Typography>
+                      <Typography variant="h4" fontWeight={900} color="primary">
+                        {st.value}
+                      </Typography>
+                    </Box>
+                    {st.icon}
+                  </Stack>
+                </Paper>
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
 
-      {/* Recent Activity Data Table */}
-      <Paper elevation={0} sx={{ p: 3, bgcolor: "white", borderRadius: 3, border: "1px solid #E5E7EB" }}>
-        <Typography variant="h6" fontWeight={800} mb={2}>
-          Recent Catalog Additions
-        </Typography>
+          {/* Recent Activity Data Table */}
+          <Paper elevation={0} sx={{ p: 3, bgcolor: "white", borderRadius: 3, border: "1px solid #E5E7EB" }}>
+            <Typography variant="h6" fontWeight={800} mb={2}>
+              Recent Catalog Additions
+            </Typography>
 
-        <TableContainer>
-          <Table>
-            <TableHead sx={{ bgcolor: "#FAF8F5" }}>
-              <TableRow>
-                <TableCell fontWeight={700}>Product</TableCell>
-                <TableCell fontWeight={700}>Category</TableCell>
-                <TableCell fontWeight={700}>Rating</TableCell>
-                <TableCell fontWeight={700}>Price</TableCell>
-                <TableCell fontWeight={700}>Amazon Link</TableCell>
-                <TableCell fontWeight={700} align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {products.slice(0, 5).map((p) => (
-                <TableRow key={p.id} hover>
-                  <TableCell>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Box component="img" src={p.image} alt={p.name} sx={{ width: 40, height: 40, borderRadius: 1, objectFit: "cover" }} />
-                      <Box>
-                        <Typography variant="subtitle2" fontWeight={700}>{p.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">{p.brand || "Verdana"}</Typography>
-                      </Box>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Chip label={p.category} size="small" variant="outlined" />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight={700}>{p.Ratings} ★</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight={700}>${p.price? Number(p.price).toFixed(2):"-"}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    {p.amazonAffiliateUrl ? (
-                      <Chip label="Configured" color="success" size="small" />
-                    ) : (
-                      <Chip label="Missing" color="warning" size="small" />
-                    )}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Button component={Link} to={`/admin/products/edit/${p.id}`} size="small" color="primary">
-                      Edit
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+            <TableContainer>
+              <Table>
+                <TableHead sx={{ bgcolor: "#FAF8F5" }}>
+                  <TableRow>
+                    <TableCell fontWeight={700}>Product</TableCell>
+                    <TableCell fontWeight={700}>Category</TableCell>
+                    <TableCell fontWeight={700}>Rating</TableCell>
+                    <TableCell fontWeight={700}>Price</TableCell>
+                    <TableCell fontWeight={700}>Amazon Link</TableCell>
+                    <TableCell fontWeight={700} align="right">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {products.slice(0, 5).map((p) => (
+                    <TableRow key={p.id} hover>
+                      <TableCell>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Box component="img" src={p.image} alt={p.name} sx={{ width: 40, height: 40, borderRadius: 1, objectFit: "cover" }} />
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight={700}>{p.name}</Typography>
+                            <Typography variant="caption" color="text.secondary">{p.brand || "Verdana"}</Typography>
+                          </Box>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={p.category} size="small" variant="outlined" />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={700}>{p.Ratings} ★</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={700}>${p.price? Number(p.price).toFixed(2):"-"}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        {p.amazonAffiliateUrl ? (
+                          <Chip label="Configured" color="success" size="small" />
+                        ) : (
+                          <Chip label="Missing" color="warning" size="small" />
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button component={Link} to={`/admin/products/edit/${p.id}`} size="small" color="primary">
+                          Edit
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </>
+      )}
     </Box>
   );
 }
+

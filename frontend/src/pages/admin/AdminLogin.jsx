@@ -1,38 +1,29 @@
 import React, { useState } from "react";
-import { Box, Paper, Typography, TextField, Button, Alert, Stack } from "@mui/material";
+import { Box, Paper, Typography, TextField, Button, Alert, Stack, CircularProgress } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import {useNavigate} from 'react-router-dom';
-import {loginAdmin} from '../../api/authAPI.js';
+import { useNavigate } from "react-router-dom";
+import { loginAdmin } from "../../api/authAPI.js";
 
-
-
-export default function AdminLogin({ onLogin }) {
+export default function AdminLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loding, setLoding] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoding(true);
+    setLoading(true);
 
-    try{
-      const {token} = await loginAdmin(username, password);
+    try {
+      const { token } = await loginAdmin(username, password);
       localStorage.setItem("verdana_admin_token", token);
-      navigate("/admin/Dashboard")
-    }catch(err){
+      navigate("/admin/dashboard");
+    } catch (err) {
       setError(err.message);
-    }finally{
-      setLoding(false);
+      setLoading(false); // only reset here - on success we're navigating away anyway
     }
-   
-  };
-
-  const handleDemoBypass = () => {
-    localStorage.setItem("verdana_admin_auth", "true");
-    if (onLogin) onLogin();
   };
 
   return (
@@ -43,10 +34,13 @@ export default function AdminLogin({ onLogin }) {
         alignItems: "center",
         justifyContent: "center",
         bgcolor: "#FAF8F5",
-        p: 2
+        p: 2,
       }}
     >
-      <Paper elevation={0} sx={{ p: 4, maxWidth: 420, width: "100%", bgcolor: "white", borderRadius: 4, border: "1px solid #E5E7EB" }}>
+      <Paper
+        elevation={0}
+        sx={{ p: 4, maxWidth: 420, width: "100%", bgcolor: "white", borderRadius: 4, border: "1px solid #E5E7EB" }}
+      >
         <Stack alignItems="center" spacing={1} mb={3}>
           <Box sx={{ p: 1.5, bgcolor: "#FAF8F5", borderRadius: "50%", color: "primary.main" }}>
             <LockOutlinedIcon fontSize="large" />
@@ -59,7 +53,11 @@ export default function AdminLogin({ onLogin }) {
           </Typography>
         </Stack>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         <Box component="form" onSubmit={handleSubmit}>
           <Stack spacing={2.5}>
@@ -69,7 +67,7 @@ export default function AdminLogin({ onLogin }) {
               fullWidth
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="admin"
+              disabled={loading}
             />
             <TextField
               label="Password"
@@ -78,13 +76,19 @@ export default function AdminLogin({ onLogin }) {
               fullWidth
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="admin123"
+              disabled={loading}
             />
-            <Button type="submit" variant="contained" color="primary" size="large" fullWidth sx={{ py: 1.5, fontWeight: 700 }}>
-              Sign In
-            </Button>
-            <Button variant="outlined" color="secondary" fullWidth onClick={handleDemoBypass} sx={{ textTransform: "none" }}>
-              Quick Demo Access (Skip Login)
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              size="large"
+              fullWidth
+              disabled={loading}
+              sx={{ py: 1.5, fontWeight: 700 }}
+              startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
+            >
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </Stack>
         </Box>

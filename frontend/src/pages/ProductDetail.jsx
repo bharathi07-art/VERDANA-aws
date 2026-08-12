@@ -41,6 +41,7 @@ export default function ProductDetails() {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [fetchError, setFetchError] = useState("");
   const [activeImage, setActiveImage] = useState("");
   const [relatedProducts, setRelatedProducts] = useState([]);
 
@@ -57,13 +58,19 @@ export default function ProductDetails() {
   useEffect(() => {
     setLoading(true);
     setNotFound(false);
+    setFetchError("");
 
     (async () => {
       try {
-        const found = await getProductById(id); // fixed: was missing `id`
-        setItem(found);
-        setActiveImage(found.image);
+        const found = await getProductById(id);
+        if (!found) {
+          setNotFound(true);
+        } else {
+          setItem(found);
+          setActiveImage(found.image);
+        }
       } catch (err) {
+        setFetchError(err.message || "Failed to load product details");
         setNotFound(true);
       } finally {
         setLoading(false);
@@ -99,6 +106,11 @@ export default function ProductDetails() {
   if (notFound || !item) {
     return (
       <Box sx={{ p: 8, textAlign: "center", minHeight: "60vh", bgcolor: "#FAF8F5" }}>
+        {fetchError && (
+          <Alert severity="error" sx={{ maxWidth: 500, mx: "auto", mb: 3 }}>
+            {fetchError}
+          </Alert>
+        )}
         <Typography variant="h4" fontWeight={700} color="primary" mb={2}>
           Product Review Not Found
         </Typography>
