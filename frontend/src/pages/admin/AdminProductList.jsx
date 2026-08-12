@@ -156,7 +156,7 @@ export default function AdminProductList() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight={700}>
-                        ${item.price?.toFixed(2)}
+                        ${Number(item.price || 0).toFixed(2)}
                       </Typography>
                     </TableCell>
                     <TableCell>
