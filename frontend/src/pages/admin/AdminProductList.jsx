@@ -78,7 +78,7 @@ export default function AdminProductList() {
 
   return (
     <Box>
-      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} mb={4} gap={2} sx={{mb:4,gap:2}}>
+      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} mb={4} gap={2} sx={{ mb: 4, gap: 2 }}>
         <Box>
           <Typography variant="h4" fontWeight={900} fontFamily="Libertinus, serif" color="primary">
             Product Catalog Management
@@ -88,7 +88,7 @@ export default function AdminProductList() {
           </Typography>
         </Box>
 
-        <Button component={Link} to="/admin/addProduct"  variant="contained" color="secondary" startIcon={<AddIcon />}>
+        <Button component={Link} to="/admin/addProduct" variant="contained" color="secondary" startIcon={<AddIcon />}>
           Add New Product
         </Button>
       </Stack>
@@ -128,13 +128,13 @@ export default function AdminProductList() {
             <Table>
               <TableHead sx={{ bgcolor: "#FAF8F5" }}>
                 <TableRow>
-                  <TableCell fontWeight={700}>Thumbnail</TableCell>
-                  <TableCell fontWeight={700}>Name</TableCell>
-                  <TableCell fontWeight={700}>Category</TableCell>
-                  <TableCell fontWeight={700}>Price</TableCell>
-                  <TableCell fontWeight={700}>Rating</TableCell>
-                  <TableCell fontWeight={700}>Amazon Link</TableCell>
-                  <TableCell fontWeight={700} align="right">Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Thumbnail</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Price</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Rating</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Amazon Link</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -156,7 +156,7 @@ export default function AdminProductList() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight={700}>
-                        ${item.price?.toFixed(2)}
+                        ${Number(item.price || 0).toFixed(2)}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -224,4 +224,3 @@ export default function AdminProductList() {
     </Box>
   );
 }
-

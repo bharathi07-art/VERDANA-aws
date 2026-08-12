@@ -5,6 +5,6 @@ const route = express.Router();
 
 route.get("/getProduct",getAllProducts);
 route.get("/:id",getProductById);
-route.get("/delete/id",adminAuth,deleteProduct)
+route.delete("/delete/:id",deleteProduct)
 
 export default route;
