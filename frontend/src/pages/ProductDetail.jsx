@@ -51,7 +51,7 @@ export default function ProductDetails() {
   });
 
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
-  const [reviewForm, setReviewForm] = useState({ author: "", title: "", rating: 5, comment: "" });
+  const [reviewForm, setReviewForm] = useState({ author: "", title: "", Ratings: 5, comment: "" });
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
   // Fetch the product itself
@@ -147,7 +147,7 @@ export default function ProductDetails() {
       id: Date.now(),
       author: reviewForm.author,
       title: reviewForm.title,
-      rating: reviewForm.rating,
+      Ratings: reviewForm.Ratings,
       comment: reviewForm.comment,
       date: new Date().toLocaleDateString(),
       verified: false,
@@ -162,15 +162,15 @@ export default function ProductDetails() {
     setTimeout(() => {
       setSubmittedSuccess(false);
       setReviewDialogOpen(false);
-      setReviewForm({ author: "", title: "", rating: 5, comment: "" });
+      setReviewForm({ author: "", title: "", Ratings: 5, comment: "" });
     }, 1500);
   };
 
   const totalRevCount = item.reviewCount || item.userReviews?.length || 1;
-  const breakdown = item.ratingsBreakdown || { 5: 80, 4: 15, 3: 3, 2: 1, 1: 1 };
+  const breakdown = item.RatingssBreakdown || { 5: 80, 4: 15, 3: 3, 2: 1, 1: 1 };
   const sumVal = Object.values(breakdown).reduce((a, b) => a + b, 0) || 100;
 
-  const ratingBars = [5, 4, 3, 2, 1].map((star) => ({
+  const RatingsBars = [5, 4, 3, 2, 1].map((star) => ({
     star,
     percent: Math.round(((breakdown[star] || 0) / sumVal) * 100),
   }));
@@ -181,8 +181,7 @@ export default function ProductDetails() {
         {/* Breadcrumbs Navigation */}
         <Stack
           direction="row"
-          justifyContent="space-between"
-          alignItems="center"
+          sx={{justifyContent:"space-between", alignItems:"center", p:2}}
           mb={3}
         >
           <Breadcrumbs separator="›" aria-label="breadcrumb">
@@ -287,9 +286,9 @@ export default function ProductDetails() {
                 </Typography>
 
                 <Stack direction="row" spacing={2} alignItems="center" mb={3}>
-                  <Rating value={item.rating} precision={0.1} readOnly size="large" />
+                  <Rating value={item.Ratings} precision={0.1} readOnly size="large" />
                   <Box sx={{ bgcolor: "#798262", color: "white", px: 1.5, py: 0.5, borderRadius: 1.5, fontWeight: 800 }}>
-                    {item.rating} / 5.0
+                    {item.Ratings} / 5.0
                   </Box>
                   <Typography variant="body2" color="text.secondary">
                     Based on {totalRevCount} verified evaluations
@@ -413,7 +412,7 @@ export default function ProductDetails() {
           </Paper>
         )}
 
-        {/* Ratings Breakdown & User Reviews */}
+        {/* Ratingss Breakdown & User Reviews */}
         <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, bgcolor: "white", borderRadius: 4, border: "1px solid #E5E7EB", mb: 6 }}>
           <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -424,7 +423,7 @@ export default function ProductDetails() {
           >
             <Box>
               <Typography variant="h4" fontWeight={900} fontFamily="Libertinus, serif" color="primary">
-                Product Ratings & Reviews
+                Product Ratingss & Reviews
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Honest feedback submitted by verified Verdana readers.
@@ -440,9 +439,9 @@ export default function ProductDetails() {
             <Grid size={{ xs: 12, md: 4 }}>
               <Paper elevation={0} sx={{ p: 4, textAlign: "center", bgcolor: "#FAF8F5", border: "1px solid #E5E7EB", borderRadius: 3 }}>
                 <Typography variant="h2" fontWeight={900} fontFamily="Libertinus, serif" color="secondary.main">
-                  {item.rating}
+                  {item.Ratings}
                 </Typography>
-                <Rating value={item.rating} precision={0.1} readOnly size="large" sx={{ my: 1 }} />
+                <Rating value={item.Ratings} precision={0.1} readOnly size="large" sx={{ my: 1 }} />
                 <Typography variant="body2" color="text.secondary" fontWeight={600}>
                   {totalRevCount} Reader Reviews
                 </Typography>
@@ -451,7 +450,7 @@ export default function ProductDetails() {
 
             <Grid size={{ xs: 12, md: 8 }}>
               <Stack spacing={1.5}>
-                {ratingBars.map((bar) => (
+                {RatingsBars.map((bar) => (
                   <Stack key={bar.star} direction="row" spacing={2} alignItems="center">
                     <Typography variant="body2" fontWeight={700} width={40}>
                       {bar.star} ★
@@ -501,7 +500,7 @@ export default function ProductDetails() {
                         {rev.date}
                       </Typography>
                     </Stack>
-                    <Rating value={rev.rating} precision={0.5} readOnly size="small" sx={{ mb: 1 }} />
+                    <Rating value={rev.Ratings} precision={0.5} readOnly size="small" sx={{ mb: 1 }} />
                     <Typography variant="subtitle2" fontWeight={700} mb={0.5}>
                       {rev.title}
                     </Typography>
@@ -546,7 +545,7 @@ export default function ProductDetails() {
                       >
                         {rel.name}
                       </Typography>
-                      <Rating value={rel.rating} readOnly size="small" sx={{ my: 0.5 }} />
+                      <Rating value={rel.Ratings} readOnly size="small" sx={{ my: 0.5 }} />
                       <Button
                         component={Link}
                         to={`/product/${rel.id}`}
@@ -585,8 +584,8 @@ export default function ProductDetails() {
                     Your Overall Score
                   </Typography>
                   <Rating
-                    value={reviewForm.rating}
-                    onChange={(_, val) => setReviewForm({ ...reviewForm, rating: val })}
+                    value={reviewForm.Ratings}
+                    onChange={(_, val) => setReviewForm({ ...reviewForm, Ratings: val })}
                     size="large"
                   />
                 </Box>
