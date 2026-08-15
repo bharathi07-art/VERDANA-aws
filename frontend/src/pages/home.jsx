@@ -659,11 +659,11 @@ export default function Home() {
                 </List>
 
                 {/* Rating Filter */}
-                <Box mt={4}>
-                  <Typography variant="subtitle2" fontWeight={700} mb={1}>
+                <Box mt={4} sx={{mb:2}}>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{mb:2}}>
                     Minimum Rating
                   </Typography>
-                  <Stack direction="row" spacing={1}>
+                  <Stack direction="row" spacing={3}>
                     {[0, 4.0, 4.5, 4.8].map((r) => (
                       <Chip
                         key={r}

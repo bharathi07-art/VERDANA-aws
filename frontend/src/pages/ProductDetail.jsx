@@ -418,6 +418,7 @@ export default function ProductDetails() {
             direction={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
             alignItems={{ xs: "flex-start", sm: "center" }}
+            sx={{justifyContent:"space-between", alignItems:"center"}}
             mb={4}
             gap={2}
           >
