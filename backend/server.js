@@ -6,9 +6,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoute from "./router/authrouter.js";
 import productRoute from "./router/productRoute.js";
+import SubscriptionRouter from "./router/subscriptionRouter.js"
 import "./models/admin.js";
 import "./models/product.js";
 import "./models/productImg.js";
+import "./models/subscription.js";
 
 
 const app = express();
@@ -19,6 +21,7 @@ const port = process.env.PORT;
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.use("/api/auth", authRoute);
 app.use("/api/product",productRoute);
+app.use("/api/user",SubscriptionRouter);
 
 
 connectPostgres().then(async () => {

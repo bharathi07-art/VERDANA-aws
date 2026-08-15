@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box, Typography, Stack, Grid, TextField, Button, Alert } from "@mui/material";
 import { Link } from "react-router-dom";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import {newSub} from "../api/subAPI.js";
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -9,9 +10,9 @@ export default function Footer() {
 
   const handleSubscribe = (e) => {
     e.preventDefault();
-    if (email.trim()) {
+    if (email) {
+      newSub(email);
       setSubscribed(true);
-      setEmail("");
     }
   };
 
@@ -101,7 +102,7 @@ export default function Footer() {
                   }
                 }}
               />
-              <Button type="submit" variant="contained" color="secondary" sx={{ textTransform: "none", fontWeight: 700 }}>
+              <Button  type="submit" variant="contained" color="secondary" sx={{ textTransform: "none", fontWeight: 700 }}>
                 Join
               </Button>
             </Box>
