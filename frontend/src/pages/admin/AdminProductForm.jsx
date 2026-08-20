@@ -316,7 +316,7 @@ export default function AdminProductForm() {
                   </Grid>
                 </Grid>
 
-                <Stack direction="row" spacing={2} justifyContent="flex-end" mt={4}>
+                <Stack direction="row" spacing={2}  sx={{ mt:4}}>
                   <Button onClick={() => navigate("/admin/productList")} color="inherit" disabled={submitting}>
                     Cancel
                   </Button>
