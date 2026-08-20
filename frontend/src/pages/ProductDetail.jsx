@@ -350,21 +350,21 @@ export default function ProductDetails() {
         </Paper>
 
         {/* Detailed Pros & Cons Section */}
-        <Grid container spacing={4} mb={6}>
+        <Grid container spacing={4} mb={6} sx={{mb:6}}>
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper elevation={0} sx={{ p: 4, bgcolor: "#F4F7F2", border: "1px solid #D2DEC9", borderRadius: 3, height: "100%" }}>
-              <Stack direction="row" spacing={1.5} alignItems="center" mb={3}>
+              <Stack direction="row" spacing={1.5} alignItems="center" mb={3} sc={{mb:3}}>
                 <CheckCircleIcon sx={{ color: "#4A6B3A", fontSize: 28 }} />
-                <Typography variant="h5" fontWeight={800} color="#2D4521">
+                <Typography variant="h5" fontWeight={800} color="#2D4521" sx={{mb:2}}>
                   The Pros (What We Loved)
                 </Typography>
               </Stack>
-              <Stack spacing={2}>
+              <Stack spacing={2} sx={{mt:1, ml:3}}>
                 {(item.pros && item.pros.length > 0
                   ? item.pros
                   : ["Formulated with pure botanical ingredients", "Dermatologically tested", "Noticeable results within 14 days"]
                 ).map((pro, idx) => (
-                  <Stack key={idx} direction="row" spacing={1.5} alignItems="flex-start">
+                  <Stack key={idx} direction="row" spacing={1} sx={{mt:1}} >
                     <CheckCircleIcon sx={{ color: "#4A6B3A", fontSize: 18, mt: 0.3 }} />
                     <Typography variant="body1" color="text.primary" sx={{ lineHeight: 1.5 }}>
                       {pro}
@@ -383,7 +383,7 @@ export default function ProductDetails() {
                   The Cons (Things to Consider)
                 </Typography>
               </Stack>
-              <Stack spacing={2}>
+              <Stack spacing={2} sx={{mt:1, ml:3}}>
                 {(item.cons && item.cons.length > 0
                   ? item.cons
                   : ["Requires consistent daily application", "Slightly higher premium price tag"]
@@ -436,7 +436,7 @@ export default function ProductDetails() {
             </Button>
           </Stack>
 
-          <Grid container spacing={4} alignItems="center" mb={4}>
+          <Grid container spacing={4} alignItems="center" mb={4} sx={{mt:4}}>
             <Grid size={{ xs: 12, md: 4 }}>
               <Paper elevation={0} sx={{ p: 4, textAlign: "center", bgcolor: "#FAF8F5", border: "1px solid #E5E7EB", borderRadius: 3 }}>
                 <Typography variant="h2" fontWeight={900} fontFamily="Libertinus, serif" color="secondary.main">
