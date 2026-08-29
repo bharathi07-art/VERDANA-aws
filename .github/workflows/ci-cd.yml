@@ -23,13 +23,13 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: backend/package.json
+          cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
-        run: npm run
+        run: npm test
         env:
           JWT_Secret: ${{secrets.JWT_Secret}}
           DB_URI: ${{secrets.DB_URI}}
