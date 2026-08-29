@@ -78,7 +78,7 @@ export default function AdminProductList() {
 
   return (
     <Box>
-      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} mb={4} gap={2} sx={{mb:4,gap:2}}>
+      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} mb={4} gap={2} sx={{mb:4,gap:2, mt:2}}>
         <Box>
           <Typography variant="h4" fontWeight={900} fontFamily="Libertinus, serif" color="primary">
             Product Catalog Management
